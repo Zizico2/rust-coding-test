@@ -33,7 +33,10 @@ impl DepositHistory {
         tx_id: &TransactionId,
         client_id: &ClientId,
     ) -> Result<&mut Deposit, EngineError> {
-        let res = self.0.get_mut(tx_id).filter(|tx| &tx.client_id() == client_id);
+        let res = self
+            .0
+            .get_mut(tx_id)
+            .filter(|tx| &tx.client_id() == client_id);
         match res {
             Some(tx) if tx.dispute == DisputeState::Open => Ok(tx),
             Some(_) => Err(EngineError::TransactionNotDisputed),
@@ -45,7 +48,10 @@ impl DepositHistory {
         tx_id: &TransactionId,
         client_id: &ClientId,
     ) -> Result<&mut Deposit, EngineError> {
-        let res = self.0.get_mut(tx_id).filter(|tx| &tx.client_id() == client_id);
+        let res = self
+            .0
+            .get_mut(tx_id)
+            .filter(|tx| &tx.client_id() == client_id);
         match res {
             Some(tx) if tx.dispute == DisputeState::None => Ok(tx),
             Some(_) => Err(EngineError::TransactionAlreadyDisputed),

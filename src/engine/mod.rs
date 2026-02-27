@@ -100,9 +100,10 @@ impl PaymentsEngine {
             .client_accounts
             .get_or_create_account_mut(transaction.client_id());
 
-        let disputed_tx = self
-            .deposit_history
-            .try_get_deposit_undisputed_mut(&transaction.disputed_tx_id(), &transaction.client_id())?;
+        let disputed_tx = self.deposit_history.try_get_deposit_undisputed_mut(
+            &transaction.disputed_tx_id(),
+            &transaction.client_id(),
+        )?;
 
         account.balance.hold(disputed_tx.amount());
         disputed_tx.dispute = DisputeState::Open;
@@ -113,9 +114,10 @@ impl PaymentsEngine {
             .client_accounts
             .get_or_create_account_mut(transaction.client_id());
 
-        let disputed_tx = self
-            .deposit_history
-            .try_get_deposit_under_dispute_mut(&transaction.disputed_tx_id(), &transaction.client_id())?;
+        let disputed_tx = self.deposit_history.try_get_deposit_under_dispute_mut(
+            &transaction.disputed_tx_id(),
+            &transaction.client_id(),
+        )?;
 
         account.balance.release(disputed_tx.amount());
 
@@ -131,16 +133,17 @@ impl PaymentsEngine {
             .client_accounts
             .get_or_create_account_mut(transaction.client_id());
 
-        let disputed_tx = self
-            .deposit_history
-            .try_get_deposit_under_dispute_mut(&transaction.disputed_tx_id(), &transaction.client_id())?;
+        let disputed_tx = self.deposit_history.try_get_deposit_under_dispute_mut(
+            &transaction.disputed_tx_id(),
+            &transaction.client_id(),
+        )?;
 
         account.balance.release(disputed_tx.amount());
         account.balance.remove(disputed_tx.amount())?;
         account.locked = true;
 
         disputed_tx.dispute = DisputeState::ChargedBack;
-        
+
         Ok(())
     }
 

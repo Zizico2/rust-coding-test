@@ -39,7 +39,6 @@ src/
 - **No `unsafe` code** - the entire codebase relies on safe Rust.
 - **`thiserror`-based error types** - `DomainError` (e.g. `InsufficientFunds`) and `EngineError` (e.g. `AccountLocked`, `TransactionNotFound`, `TransactionAlreadyDisputed`) provide clear, structured error reporting.
 - **Malformed input is skipped, not fatal** - CSV parsing errors and conversion failures are logged with `tracing::warn` and the row is silently discarded, so a single bad record doesn't halt processing of the remaining file.
-- A few `.unwrap()` calls remain on I/O operations in `main.rs` and `output.rs` (file opening, CSV writing/flushing). These are intentional: if the program can't open the input file or write to stdout, a panic with a clear message is acceptable.
 
 ## Correctness
 

@@ -6,7 +6,7 @@ use rust_coding_test::engine::PaymentsEngine;
 use rust_coding_test::output;
 use rust_coding_test::parsing;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Arguments::parse();
     if let Some(log_level) = args.log_level {
         tracing_subscriber::fmt().with_max_level(log_level).init();
@@ -14,7 +14,7 @@ fn main() {
 
     let file_path = args.input_file;
 
-    let file = File::open(file_path).unwrap();
+    let file = File::open(file_path)?;
 
     let mut rdr = csv::ReaderBuilder::new()
         .trim(csv::Trim::All)
@@ -26,7 +26,10 @@ fn main() {
     engine.process_transactions(transaction_iter);
 
     let client_accounts = engine.client_accounts();
-    output::print_accounts(client_accounts, std::io::stdout());
+
+    output::print_accounts(client_accounts, std::io::stdout())?;
+
+    Ok(())
 }
 
 #[derive(Parser)]

@@ -13,7 +13,7 @@ const INPUT: &[u8] = include_bytes!("io_tests/test_input.csv");
 
 // test output
 #[test]
-fn test_output() {
+fn test_output() -> anyhow::Result<()> {
     let transactions = vec![
         Deposit::new(1.into(), 1.into(), dec!(1.0)).into(),
         Deposit::new(1.into(), 3.into(), dec!(2.0)).into(),
@@ -25,11 +25,13 @@ fn test_output() {
 
     let mut output = Vec::new();
 
-    output::print_accounts(client_accounts, &mut output);
+    output::print_accounts(client_accounts, &mut output)?;
 
-    let output = String::from_utf8(output).unwrap();
+    let output = String::from_utf8(output)?;
 
     assert_eq!(output, OUTPUT);
+
+    Ok(())
 }
 
 // test input

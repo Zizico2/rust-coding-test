@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.102"
+anyhow = { version = "1.0.102", features = ["backtrace"] }
 clap = { version = "4.5.60", features = ["derive"] }
 csv = "1.4.0"
 derive_more = { version = "2.1.1", features = ["full"] }

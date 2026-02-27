@@ -15,7 +15,10 @@ struct OutputCsv {
     locked: bool,
 }
 
-pub fn print_accounts(client_accounts: &ClientAccounts, writer: impl std::io::Write) {
+pub fn print_accounts(
+    client_accounts: &ClientAccounts,
+    writer: impl std::io::Write,
+) -> anyhow::Result<()> {
     let mut wtr = csv::Writer::from_writer(writer);
     for (client_id, account) in client_accounts.as_map() {
         let output_csv = OutputCsv {
@@ -25,7 +28,8 @@ pub fn print_accounts(client_accounts: &ClientAccounts, writer: impl std::io::Wr
             total: account.balance.total(),
             locked: account.locked,
         };
-        wtr.serialize(output_csv).unwrap();
+        wtr.serialize(output_csv)?;
     }
-    wtr.flush().unwrap();
+    wtr.flush()?;
+    Ok(())
 }
