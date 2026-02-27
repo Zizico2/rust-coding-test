@@ -4,13 +4,11 @@
 //! a history of deposits (needed for dispute lookups), and a set of currently
 //! disputed transaction IDs.
 
-use std::collections::HashSet;
-
 use tracing::warn;
 
 use crate::{
     domain::{
-        Account, Chargeback, Deposit, Dispute, Resolve, Transaction, TransactionId, Withdrawal,
+        Account, Chargeback, Deposit, Dispute, DisputeState, Resolve, Transaction, Withdrawal,
     },
     engine::errors::EngineError,
 };
@@ -103,34 +101,12 @@ impl PaymentsEngine {
             .client_accounts
             .get_or_create_account_mut(transaction.client_id());
 
-        // Look up the original deposit; ignores disputes on non-existent or wrong-client transactions.
         let disputed_tx = self
             .deposit_history
-            .get_deposit(&transaction.disputed_tx_id(), &transaction.client_id());
-
-        let Some(disputed_tx) = disputed_tx else {
-            return Err(EngineError::TransactionNotFound);
-        };
-
-        // Prevent double-disputes on the same transaction.
-        let Some(_) = self
-            .deposit_history
-            .get_deposit_undisputed_mut(&disputed_tx.transaction_id())
-        else {
-            return Err(EngineError::TransactionAlreadyDisputed);
-        };
-        // if self
-        //     .deposit_history
-        //     .get_deposit_under_dispute_mut(&disputed_tx.transaction_id())
-        //     .is_some()
-        // {
-        //     return Err(EngineError::TransactionAlreadyDisputed);
-        // }
+            .try_get_deposit_undisputed_mut(&transaction.disputed_tx_id(), &transaction.client_id())?;
 
         account.balance.hold(disputed_tx.amount());
-
-        self.disputed_transactions
-            .insert(disputed_tx.transaction_id());
+        disputed_tx.dispute = DisputeState::Open;
         Ok(())
     }
     fn process_resolve_transaction(&mut self, transaction: Resolve) -> Result<(), EngineError> {
@@ -140,20 +116,11 @@ impl PaymentsEngine {
 
         let disputed_tx = self
             .deposit_history
-            .get_deposit(&transaction.disputed_tx_id(), &transaction.client_id());
-        let Some(disputed_tx) = disputed_tx else {
-            return Err(EngineError::TransactionNotFound);
-        };
-        if !self
-            .disputed_transactions
-            .contains(&disputed_tx.transaction_id())
-        {
-            return Err(EngineError::TransactionNotDisputed);
-        }
+            .try_get_deposit_under_dispute_mut(&transaction.disputed_tx_id(), &transaction.client_id())?;
+
         account.balance.release(disputed_tx.amount());
 
-        self.disputed_transactions
-            .remove(&disputed_tx.transaction_id());
+        disputed_tx.dispute = DisputeState::None;
 
         Ok(())
     }
@@ -165,25 +132,30 @@ impl PaymentsEngine {
             .client_accounts
             .get_or_create_account_mut(transaction.client_id());
 
+        // let disputed_tx = self
+        //     .deposit_history
+        //     .get_deposit(&transaction.disputed_tx_id(), &transaction.client_id());
+        // let Some(disputed_tx) = disputed_tx else {
+        //     return Err(EngineError::TransactionNotFound);
+        // };
+        // if !self
+        //     .disputed_transactions
+        //     .contains(&disputed_tx.transaction_id())
+        // {
+        //     return Err(EngineError::TransactionNotDisputed);
+        // }
+
         let disputed_tx = self
             .deposit_history
-            .get_deposit(&transaction.disputed_tx_id(), &transaction.client_id());
-        let Some(disputed_tx) = disputed_tx else {
-            return Err(EngineError::TransactionNotFound);
-        };
-        if !self
-            .disputed_transactions
-            .contains(&disputed_tx.transaction_id())
-        {
-            return Err(EngineError::TransactionNotDisputed);
-        }
+            .try_get_deposit_under_dispute_mut(&transaction.disputed_tx_id(), &transaction.client_id())?;
 
         account.balance.release(disputed_tx.amount());
         account.balance.remove(disputed_tx.amount())?;
         account.locked = true;
 
-        self.disputed_transactions
-            .remove(&disputed_tx.transaction_id());
+        disputed_tx.dispute = DisputeState::ChargedBack;
+        // self.disputed_transactions
+        //     .remove(&disputed_tx.transaction_id());
         Ok(())
     }
 

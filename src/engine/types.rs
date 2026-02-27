@@ -1,4 +1,7 @@
-use crate::domain::{Account, ClientId, Deposit, DisputeState, TransactionId};
+use crate::{
+    domain::{Account, ClientId, Deposit, DisputeState, TransactionId},
+    engine::errors::EngineError,
+};
 use std::collections::HashMap;
 
 /// Stores all successfully processed deposits, keyed by transaction ID.
@@ -25,15 +28,29 @@ impl DepositHistory {
     pub fn get_deposit(&self, tx_id: &TransactionId, client_id: &ClientId) -> Option<&Deposit> {
         self.0.get(tx_id).filter(|tx| &tx.client_id() == client_id)
     }
-    pub fn get_deposit_under_dispute_mut(&mut self, tx_id: &TransactionId) -> Option<&mut Deposit> {
-        self.0
-            .get_mut(tx_id)
-            .filter(|tx| tx.dispute == DisputeState::Open)
+    pub fn try_get_deposit_under_dispute_mut(
+        &mut self,
+        tx_id: &TransactionId,
+        client_id: &ClientId,
+    ) -> Result<&mut Deposit, EngineError> {
+        let res = self.0.get_mut(tx_id).filter(|tx| &tx.client_id() == client_id);
+        match res {
+            Some(tx) if tx.dispute == DisputeState::Open => Ok(tx),
+            Some(_) => Err(EngineError::TransactionNotDisputed),
+            None => Err(EngineError::TransactionNotFound),
+        }
     }
-    pub fn get_deposit_undisputed(&self, tx_id: &TransactionId) -> Option<&Deposit> {
-        self.0
-            .get(tx_id)
-            .filter(|tx| tx.dispute == DisputeState::None)
+    pub fn try_get_deposit_undisputed_mut(
+        &mut self,
+        tx_id: &TransactionId,
+        client_id: &ClientId,
+    ) -> Result<&mut Deposit, EngineError> {
+        let res = self.0.get_mut(tx_id).filter(|tx| &tx.client_id() == client_id);
+        match res {
+            Some(tx) if tx.dispute == DisputeState::None => Ok(tx),
+            Some(_) => Err(EngineError::TransactionAlreadyDisputed),
+            None => Err(EngineError::TransactionNotFound),
+        }
     }
 }
 
