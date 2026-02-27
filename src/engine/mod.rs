@@ -21,8 +21,6 @@ pub struct PaymentsEngine {
     client_accounts: ClientAccounts,
     /// Only deposits are stored - they're the only transaction type that can be disputed.
     deposit_history: DepositHistory,
-    // /// Tracks which transaction IDs are currently under dispute.
-    // disputed_transactions: HashSet<TransactionId>,
 }
 
 impl PaymentsEngine {
@@ -91,6 +89,7 @@ impl PaymentsEngine {
         check_account_eligibility(account)?;
 
         account.balance.add(transaction.amount());
+
         // Record the deposit so it can be referenced later by disputes.
         self.deposit_history.add_deposit(transaction);
 
@@ -132,19 +131,6 @@ impl PaymentsEngine {
             .client_accounts
             .get_or_create_account_mut(transaction.client_id());
 
-        // let disputed_tx = self
-        //     .deposit_history
-        //     .get_deposit(&transaction.disputed_tx_id(), &transaction.client_id());
-        // let Some(disputed_tx) = disputed_tx else {
-        //     return Err(EngineError::TransactionNotFound);
-        // };
-        // if !self
-        //     .disputed_transactions
-        //     .contains(&disputed_tx.transaction_id())
-        // {
-        //     return Err(EngineError::TransactionNotDisputed);
-        // }
-
         let disputed_tx = self
             .deposit_history
             .try_get_deposit_under_dispute_mut(&transaction.disputed_tx_id(), &transaction.client_id())?;
@@ -154,8 +140,7 @@ impl PaymentsEngine {
         account.locked = true;
 
         disputed_tx.dispute = DisputeState::ChargedBack;
-        // self.disputed_transactions
-        //     .remove(&disputed_tx.transaction_id());
+        
         Ok(())
     }
 
