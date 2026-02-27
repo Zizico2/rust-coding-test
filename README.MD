@@ -42,19 +42,18 @@ src/
 
 ## Correctness
 
-Correctness is validated through **integration tests** in `tests/all_tests.rs` covering:
+Correctness is validated through **integration tests** split across focused test modules in `tests/`:
 
-| Area | Tests |
+| Module | Tests |
 |---|---|
-| Deposits | single, multiple, multi-client, decimal precision |
-| Withdrawals | basic, exact balance, overdraft rejection, no prior deposit |
-| Disputes | funds held, nonexistent tx, wrong client, duplicate dispute, partial deposit |
-| Resolves | release funds, no prior dispute, nonexistent tx, re-dispute after resolve |
-| Chargebacks | funds removed + lock, no prior dispute, nonexistent tx, partial balance preserved |
-| Locked accounts | deposits ignored, withdrawals ignored, disputes ignored |
-| Multi-client isolation | chargeback on client A doesn't affect client B, interleaved txs |
-| Balance invariants | total = available + held during dispute |
-| Held funds vs withdrawals | withdrawal rejected when available < amount even if total is sufficient |
+| `deposit_tests` | single deposit, multiple deposits accumulate, multi-client independence, decimal precision |
+| `withdrawal_tests` | basic withdrawal, exact balance, overdraft rejection, no prior deposit, fails when available reduced by held funds |
+| `dispute_tests` | funds moved to held, nonexistent tx, wrong client, duplicate dispute, partial deposit, withdrawal tx ignored, multiple concurrent disputes, interleaved disputes with mixed outcomes, total = available + held invariant |
+| `resolve_tests` | release held funds, no prior dispute, nonexistent tx, re-dispute after resolve, wrong client |
+| `chargeback_tests` | funds removed + account locked, no prior dispute, nonexistent tx, partial balance preserved, wrong client, after resolve without re-dispute, re-dispute after chargeback |
+| `locked_account_tests` | deposits ignored, withdrawals ignored, disputes allowed, resolves allowed, chargebacks allowed |
+| `lifecycle_tests` | multi-client isolation, interleaved transactions, full dispute→resolve cycle, full dispute→chargeback cycle, re-dispute after resolve then chargeback |
+| `io_tests` | CSV input deserialization, CSV output serialization |
 
 Run all tests with:
 
