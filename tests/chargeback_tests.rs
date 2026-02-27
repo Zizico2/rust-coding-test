@@ -96,6 +96,7 @@ fn chargeback_after_resolve_without_redispute_is_ignored() {
     assert_eq!(engine.client_accounts().as_map(), &expected);
 }
 
+/// Spec + Assumption 2: transaction cannot be re-disputed after chargeback.
 #[test]
 fn redispute_after_chargeback_is_ignored() {
     let engine = run(vec![
