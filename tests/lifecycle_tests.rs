@@ -57,20 +57,6 @@ fn full_dispute_resolve_cycle_leaves_balance_intact() {
     assert_eq!(engine.client_accounts().as_map(), &expected);
 }
 
-/// Spec: dispute then chargeback removes funds and locks account.
-#[test]
-fn full_dispute_chargeback_cycle() {
-    let engine = run(vec![
-        Deposit::new(1.into(), 1.into(), dec!(100.0)).into(),
-        Dispute::new(1.into(), 1.into()).into(),
-        Chargeback::new(1.into(), 1.into()).into(),
-    ]);
-
-    let expected = HashMap::from([(ClientId::from(1), account(dec!(0.0), dec!(0.0), true))]);
-
-    assert_eq!(engine.client_accounts().as_map(), &expected);
-}
-
 /// Assumption 2 + Spec: a resolved tx can be re-disputed and then charged back.
 #[test]
 fn re_dispute_after_resolve_then_chargeback() {

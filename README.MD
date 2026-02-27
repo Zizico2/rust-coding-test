@@ -33,6 +33,7 @@ src/
 2. **A transaction can be disputed multiple times if it is resolved.** If it is charged back, it cannot be disputed again.
 3. **A locked account only disables deposits and withdrawals.**
 4. **A client's first transaction should always be a deposit, in theory.** In case it isn't the account is still created with 0 balance and the transaction is ignored.
+5. **Negative available balances from disputes are allowed.** If a deposit is partially withdrawn and then disputed, the available balance can go negative. This represents a debt to the disputing partner and is consistent with how real payment processors handle chargebacks.
 
 ## Safety & Error Handling
 
