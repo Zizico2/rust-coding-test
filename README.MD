@@ -1,8 +1,8 @@
 ## AI Usage
 
 - I used AI autocomplete (Copilot in VS Code).
-- The tests are mostly AI generated with some manual edits.
-- This README is also mostly AI-generated with manual edits. Asked it to generate tests for the challenge spec and for my assumptions.
+- The tests are mostly AI generated with some manual edits. Asked it to generate tests for the challenge spec and for my assumptions.
+- This README is also mostly AI-generated with manual edits.
 
 ## Architecture
 
