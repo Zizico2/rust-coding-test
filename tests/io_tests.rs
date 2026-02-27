@@ -8,7 +8,7 @@ use rust_coding_test::{
 };
 use rust_decimal::dec;
 
-const OUTPUT: &str = include_str!("io_tests/test_output.csv");
+const OUTPUT: &[u8] = include_bytes!("io_tests/test_output.csv");
 const INPUT: &[u8] = include_bytes!("io_tests/test_input.csv");
 
 // test output
@@ -27,10 +27,8 @@ fn test_output() -> anyhow::Result<()> {
 
     output::print_accounts(client_accounts, &mut output)?;
 
-    let output = String::from_utf8(output)?;
-
     assert_eq!(output, OUTPUT);
-
+    
     Ok(())
 }
 
