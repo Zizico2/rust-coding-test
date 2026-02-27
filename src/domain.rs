@@ -165,13 +165,16 @@ impl Balance {
         self.available += amount;
     }
     /// Debit funds (withdrawal). Fails if available < amount.
-    pub fn remove(&mut self, amount: Decimal) -> Result<(), DomainError> {
+    pub fn try_remove(&mut self, amount: Decimal) -> Result<(), DomainError> {
         if self.available >= amount {
             self.available -= amount;
         } else {
             return Err(DomainError::InsufficientFunds);
         }
         Ok(())
+    }
+    pub fn remove(&mut self, amount: Decimal) {
+        self.available -= amount;
     }
 }
 

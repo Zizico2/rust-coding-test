@@ -78,7 +78,7 @@ impl PaymentsEngine {
 
         let amount = transaction.amount();
 
-        account.balance.remove(amount)?;
+        account.balance.try_remove(amount)?;
 
         Ok(())
     }
@@ -139,7 +139,7 @@ impl PaymentsEngine {
         )?;
 
         account.balance.release(disputed_tx.amount());
-        account.balance.remove(disputed_tx.amount())?;
+        account.balance.remove(disputed_tx.amount());
         account.locked = true;
 
         disputed_tx.dispute = DisputeState::ChargedBack;

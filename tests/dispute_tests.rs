@@ -168,3 +168,20 @@ fn dispute_after_partial_withdrawal_allows_negative_available() {
 
     assert_eq!(engine.client_accounts().as_map(), &expected);
 }
+/// Assumption 5: disputing and charging back a deposit that was partially withdrawn can result
+/// in a negative available and total balance, representing a debt to the partner.
+#[test]
+fn dispute_and_chargeback_after_partial_withdrawal_allows_negative_available() {
+    // Deposit 100, withdraw 60, dispute the original deposit of 100.
+    // available = 100 - 60 - 100 = -60, held = 100, total = 40.
+    let engine = run(vec![
+        Deposit::new(1.into(), 1.into(), dec!(100.0)).into(),
+        Withdrawal::new(1.into(), 2.into(), dec!(60.0)).into(),
+        Dispute::new(1.into(), 1.into()).into(),
+        Chargeback::new(1.into(), 1.into()).into(),
+    ]);
+
+    let expected = HashMap::from([(ClientId::from(1), account(dec!(-60.0), dec!(0.0), true))]);
+
+    assert_eq!(engine.client_accounts().as_map(), &expected);
+}
